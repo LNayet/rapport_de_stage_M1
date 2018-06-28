@@ -7,6 +7,7 @@
 \usepackage{graphicx}
 \usepackage{geometry}
 \usepackage{xcolor}
+\usepackage{listings}
 \pagestyle{plain}
 \geometry{top=2.5cm, bottom=3.5cm, left=3cm , right=2cm}
 \renewcommand{\thechapter}{\Roman{chapter}}
@@ -43,7 +44,6 @@ Enfin, je tiens à remercier toutes les personnes qui m'ont aidé d'une manière
 
 \tableofcontents
 
-\newpage
 \color{red}
 \chapter{Présentation du stage}
 \color{black}
@@ -51,16 +51,57 @@ Enfin, je tiens à remercier toutes les personnes qui m'ont aidé d'une manière
 Étant étudiant à l'UFR Segmi de l'Université Paris Nanterre en M1 MIAGE, je devais effectuer un stage nécessaire pour la validation de mon M1 et mon passage en Master 2 MIAGE.\\ 
 N'ayant malheureusement pas trouvé d'entreprise, le stage s'est donc déroulé dans mon université, à Nanterre. Mon responsable de stage fut donc un de mes enseignants, Monsieur François Delbot, qui m'a donné les différentes directives à suivre durant toute la durée du stage.
 \section {En quoi consiste le stage ?}
-Le stage porte sur la génération de tests en HTML.\\On part d'un fichier de référence que l'on appellera ici "modele.html" et à partir de ce dernier, nous allons générer une série de tests qui permettront à d'autres fichiers html d'être comparés avec le fichier de référence pour savoir s'ils sont valides ou non.
+Le stage porte sur la génération de tests pour des fichiers HTML dans le langage de programmation Python.\\On part d'un fichier de référence que l'on appellera ici "modele.html" et à partir de ce dernier, nous allons générer une série de tests qui permettront à d'autres fichiers html d'être comparés avec le fichier de référence pour savoir s'ils sont valides ou non.
 \section {Les pré-requis}
-Pour effectuer cela, quelques préparatifs étaient indispensables.\\
-Tout d'abord, l'environnement de travail : le système d'exploitation sur lequel je devais travailler était Linux. On l'obtient via la virtualisation avec un logiciel comme VirtualBox par exemple ou encore en mettant son ordinateur en DualBoot. Pour le stage, la virtualisation a été privilégiée.\\Ensuite, pour pouvoir faire le fond du stage (sur lequel on va s'attarder dans le chapitre suivant), je devais utiliser la bibliothèque Beautiful Soup.
+Pour effectuer cela, quelques préparatifs étaient indispensables.
+\subsection{L'environnement de travail}
+Le système d'exploitation sur lequel je devais travailler était Linux. On l'obtient via la virtualisation avec un logiciel comme VirtualBox par exemple ou encore en mettant son ordinateur en DualBoot. Pour le stage, la virtualisation a été privilégiée.\\Ensuite, pour pouvoir faire le fond du stage (sur lequel on va s'attarder dans le chapitre suivant), je devais utiliser la bibliothèque Beautiful Soup.
 \subsection{Installer Beautiful Soup}
 Pour installer Beautiful Soup, rendez-vous dans un terminal et saisissez avant toute installation quelconque la commande suviante : \textbf{sudo apt-get update} qui permettra de mettre à jour votre système. Ensuite, vous pourrez saisir ce qui vous permettra d'installer la bibliothèque voulue soit \textbf{sudo pip install beautifulsoup4} si pip n'est pas reconnu, c'est qu'il n'est pas installé. Pour l'installer, faites la commande suivante : \textbf{sudo apt-get install python-pip} et une fois installé, refaites la commande précédente. Beautiful Soup est donc installée et prête à être utlisée.
 
-\newpage
 \color{red}
-\chapter{Parser du HTML}
+\chapter{Les enjeux du projet}
 \color{black}
 \section{Le fichier HTML de référence}
+\lstinputlisting{modele.html}
+\\Ce fichier sera le fichier de référence pour générer les tests. Les fichiers étudiants devront comporter les mêmes éléments, les mêmes balises et les paragraphes par exemple devront avoir le même contenu.\\ 
+Cependant, les fichiers pourront avoir du contenu supplémentaire par rapport à celui de référence. L'important est que le contenu présent dans le fichier modèle soit présent dans les fichiers étudiants. \\
+Les tests serviront donc à vérifier cela. 
+\newpage
+\section{Le parsing de HTML}
+Pour pouvoir faire le script Python permettant de générer les tests automatiquement, il va falloir parser de l'HTML. Parser signifie analyser, le but ici est donc d'analyser les balises HTML et leur contenu (du fichier modèle) et pouvoir comparer cela aux fichiers étudiants.\\
+Et c'est là que la bibliothèque Beautiful Soup entre en jeu ! Elle permet, en effet, de parser de l'HTML.\\
+Pour pouvoir utiliser Beautiful Soup dans notre script Python, il faut mettre en début de programme la ligne suivante : \textbf{from bs4 import BeautifulSoup}.\\
+Ensuite, on doit associer un document html au parseur et cela se fait avec la ligne de code suivante : \textbf{soup=BeautifulSoup(htmlDoc)}\\
+Ici, htmlDoc est la chaine de caractères qui contiendra le fichier html.\\ \\
+La bibliothèque Beautiful Soup permet de récupérer le contenu d'une balise spécifiée, comme par exemple la balise p, celle des paragraphes !\\ Exemple : \textbf{for p in soup.find\_all('p'):} permet de récupérer le contenu de toutes les balises 'p'. On est libre de stocker cela dans une liste par exemple : à chaque tour de boucle, si on fait \textbf{liste.append(p)} alors le contenu de la balise p trouvée viendra s'ajouter à la liste.\\
+La bibliothèque Beautiful Soup permet d'autres choses comme par exemple changer le contenu ou remplacer des balises, mais cela ne nous intéresse pas dans le cadre du stage. 
+\section{L'approche effectuée}
+Le finalité étant d'avoir une série de tests qui s'effectue lorsque l'on rentre un fichier étudiant en paramètre, j'ai décidé d'avoir une approche par palier.\\ En effet, à partir du fichier modèle qui se trouve plus haut, on peut facilement mettre en place une architecture progressive permettant de faire les tests les uns après les autres tout en les rendant dépendants entre eux. Par exemple, le premier test qui semble évident à effectuer est la présence ou non de balise html dans le fichier. Si le test passe, ce qui signifie que le fichier étudiant respecte l'architecture ou le contenu du fichier modèle, alors le test suivant peut être effectué. Dans le cas contraire, cela signifie que le document ne possède pas de balise html et il est inutile de poursuivre les tests dessus: tous les autres tests échoueront puisqu'un document html doit commencer par une balise html et se fermer par cette même balise.\\
+Ainsi, en prenant le fichier modèle comme exemple, le premier test à effectuer est donc la présence ou non de la balise html, ensuite la présence ou non de la balise head, ensuite la présence ou non de la balise title, ensuite la vérification du contenu de la balise title entre le fichier modèle et celui étudiant et ainsi de suite...\\
+Une nouvelle fois, si par exemple le test de la présence de la balise title est rejeté, alors il est inutile de vérifier le contenu de cette dernière, elle n'existe simplement pas. Il faut effectuer des tests seulement là où c'est utile de le faire.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 \end{document}
